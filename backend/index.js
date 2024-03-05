@@ -1,0 +1,560 @@
+const port = 4000;
+const express = require("express");
+const app = express();
+const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const multer = require("multer");
+const path = require("path");
+const cors = require("cors");
+const bcrypt = require('bcryptjs');
+const validator = require('validator');
+const { log } = require("console");
+require("dotenv").config()
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
+
+// Generate a random token
+const generateToken = () => {
+  return crypto.randomBytes(20).toString('hex');
+};
+
+// Set up nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'cljfood@gmail.com', // replace with your email
+    pass: 'qjbu znxd jind kcgg' // replace with your email password
+  }
+});
+
+app.use(express.json());
+app.use(cors());
+
+const stripe = require("stripe")(process.env.STRIPE_SECRET)
+
+app.post('/create-checkout-session', async(req, res) => {
+    const menus = req.body
+
+    const lineItems = menus.map((menu) => ({
+        price_data: {
+            currency: "inr",
+            product_data: {
+                name: menu.name
+
+            },
+            unit_amount: Math.round(menu.new_price * 100)
+        },
+        
+        quantity: menu.count
+    }))
+
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: lineItems,
+        mode: "payment",
+        success_url: "http://localhost:4000/payment-success?session_id={CHECKOUT_SESSION_ID}",
+        cancel_url: "http://localhost:4000/payment-failure?session_id={CHECKOUT_SESSION_ID}",
+        phone_number_collection: {
+            enabled: true,
+          },
+          shipping_address_collection: {
+            allowed_countries: ['IN', 'US'],
+          },
+        
+    })
+    console.log(session)
+    res.json({id: session.id})
+    
+})
+
+
+
+
+
+
+app.get('/payment-data', async (req, res) => {
+
+    try {
+      const session = await stripe.checkout.sessions.retrieve(req?.query?.session_id)
+      console.log(session)
+      res.json({session: session})
+    }
+    catch(e) {
+      // console.error(e)
+      res.status(404).send(`${e}`)
+    }
+    
+    
+    })
+  
+  app.all('/payment-success', async (req, res) => {
+  
+    try {
+      const session = await stripe.checkout.sessions.retrieve(req?.query?.session_id)
+      console.log(session)
+    }
+    catch(e) {
+      console.error(e)
+    }
+    console.log(req.query)
+    // res.json({query: req.query})
+  
+    res.redirect(`http://localhost:3000/payment-success?session_id=${encodeURI(req?.query?.session_id)}`)
+    // const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+    
+    
+    // const customer = await stripe.customers.retrieve(session?.customer);
+  
+    // res.send(`<html><body><h1>Thanks for your order, ${customer?.name}!</h1></body></html>`);
+  });
+  
+  app.all('/payment-failure', (req, res) => {
+    console.log(req.body)
+    res.status(200).json(req.body)
+  })
+  
+  app.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+  
+    try {
+      const user = await Users.findOne({ email });
+  
+      if (!user) {
+        return res.status(404).json({ success: false, errors: 'Email not found' });
+      }
+  
+      // Generate reset token and set expiration time (1 hour in this case)
+      const resetToken = generateToken();
+      const resetTokenExpiration = Date.now() + 3600000; // 1 hour in milliseconds
+  
+      // Update user document with reset token and expiration time
+      await Users.findOneAndUpdate({ email }, { resetToken, resetTokenExpiration });
+  
+      // Send reset password email
+      const resetLink = `http://localhost:3000/reset-password?token=${resetToken}`;
+      const mailOptions = {
+        from: 'your_email@gmail.com', // replace with your email
+        to: email,
+        subject: 'Reset Password',
+        html: `Click <a href="${resetLink}">here</a> to reset your password.`
+      };
+  
+      await transporter.sendMail(mailOptions);
+  
+      res.json({ success: true, message: 'Password reset email sent successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, errors: 'Internal Server Error' });
+    }
+  });
+  
+  // Endpoint for resetting the password with the provided token
+  app.post('/reset-password', async (req, res) => {
+    const { token, newPassword } = req.body;
+  
+    try {
+      const user = await Users.findOne({
+        resetToken: token,
+        resetTokenExpiration: { $gt: Date.now() }
+      });
+  
+      if (!user) {
+        return res.status(400).json({ success: false, errors: 'Invalid or expired token' });
+      }
+  
+      // Encrypt the new password
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(newPassword, salt);
+  
+      // Update user document with new password and clear reset token fields
+      await Users.findOneAndUpdate(
+        { resetToken: token },
+        { password: hashedPassword, resetToken: undefined, resetTokenExpiration: undefined }
+      );
+  
+      res.json({ success: true, message: 'Password reset successful' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, errors: 'Internal Server Error' });
+    }
+  });
+  
+
+
+// Database connection with mongodb
+
+mongoose.connect("mongodb+srv://crazylittlejuni:crazylittlejuni@cluster0.jym6n2j.mongodb.net/cljfood")
+
+//API creation
+
+app.get("/",(req,res)=>{
+    res.send("Express App is running")
+})
+
+//image storage engine
+
+const storage=multer.diskStorage({
+    destination: './upload/images',
+    filename:(req,file,cb)=>{
+        return cb(null,`${file.fieldname}_${Date.now()}${path.extname(file.originalname)}`)
+    }
+})
+
+const upload=multer({storage:storage})
+//creating upload endpoint for images
+app.use('/images',express.static('upload/images'))
+app.post("/upload",upload.single('menu'),(req,res)=>{
+    res.json({
+        success:1,
+        image_url:`http://localhost:${port}/images/${req.file.filename}`
+    })
+})
+
+//Schema for Creating menu
+
+const Menu = mongoose.model("Menu",{
+    id:{
+        type: Number,
+        required: true,
+    },
+    name:{
+        type:String,
+        required:true,
+    },
+    image:{
+        type:String,
+        required:true,
+    },
+    category:{
+        type:String,
+        required:true,
+    },
+    new_price:{
+        type:Number,
+        required:true,
+    },
+    old_price:{
+        type:Number,
+        required:true,
+    },
+    date:{
+        type:Date,
+        default:Date.now,
+    },
+    available:{
+        type:Boolean,
+        default:true,
+    },
+})
+
+app.post('/addmenu',async (req,res)=>{
+    let menus =await Menu.find({});
+    let id;
+    if(menus.length>0){
+        let last_menu_array = menus.slice(-1);
+        let last_menu =last_menu_array[0];
+        id= last_menu.id+1;
+    }
+    else{
+        id=1;
+    }
+    const menu = new Menu({
+        id:id,
+        name:req.body.name,
+        image:req.body.image,
+        category:req.body.category,
+        new_price:req.body.new_price,
+        old_price:req.body.old_price,
+    });
+    console.log(menu);
+    await menu.save();
+    console.log("Saved");
+    res.json({
+        success:true,
+        name:req.body.name,
+    })
+
+})
+
+//creating API for deleting menus
+
+app.post('/removemenu',async (req,res)=>{
+    await Menu.findOneAndDelete({id:req.body.id});
+    console.log("Removed");
+    res.json({
+        success:true,
+        name:req.body.name
+    })
+})
+
+//Creating API for getting all memu
+app.get('/allmenus',async (req,res)=>{
+    let menus= await Menu.find({});
+    console.log("All Menus Fetched");
+    res.send(menus);
+})
+
+//Schema creating for User model
+
+const Users=mongoose.model('Users',{
+    name:{
+        type:String,
+    },
+    email:{
+       type:String,
+       unique:true, 
+    },
+    password:{
+        type:String,
+
+    },
+    resetToken: {
+        type: String,
+      },
+      resetTokenExpiration: {
+        type: Date,
+      },
+    cartData:{
+        type:Object,
+    },
+    date:{
+        type:Date,
+        default:Date.now,
+    }
+    
+})
+
+//Creating Endpoint for registering the user
+app.post('/signup', async (req, res) => {
+    const { username, email, password } = req.body;
+
+    // Check if any required field is empty
+    if (!username || !email || !password) {
+        return res.status(400).json({ success: false, errors: "All fields are required" });
+    }
+
+    // Validate email format
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ success: false, errors: "Invalid email format" });
+    }
+
+    // Validate name (only allow letters)
+    if (!validator.isAlpha(username.replace(/\s/g, ''))) {
+        return res.status(400).json({ success: false, errors: "Name can only contain letters" });
+    }
+
+    // Validate password strength
+    if (password.length < 8 || !validator.isStrongPassword(password)) {
+        return res.status(400).json({
+            success: false,
+            errors: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character."
+        });
+    }
+
+    // Check if the email already exists
+    let check = await Users.findOne({ email });
+    if (check) {
+        return res.status(400).json({ success: false, errors: "Existing user found with the same email address" });
+    }
+
+    // Encrypt the password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create a new user with the validated and encrypted data
+    let cart = {};
+    for (let i = 0; i < 300; i++) {
+        cart[i] = 0;
+    }
+
+    const user = new Users({
+        name: username,
+        email,
+        password: hashedPassword,
+        cartData: cart,
+    });
+
+    // Save the user to the database
+    await user.save();
+
+    // Generate JWT token
+    const data = {
+        user: {
+            id: user.id
+        }
+    }
+
+    const token = jwt.sign(data, 'secret_ecom');
+    res.json({ success: true, token });
+});
+
+
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    // Check if any required field is empty
+    if (!email || !password) {
+        return res.status(400).json({ success: false, errors: "All fields are required" });
+    }
+
+    // Validate email format
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({ success: false, errors: "Invalid email format" });
+    }
+
+    let user = await Users.findOne({ email });
+
+    if (user) {
+        const passCompare = await bcrypt.compare(password, user.password);
+
+        if (passCompare) {
+            const data = {
+                user: {
+                    id: user.id
+                }
+            }
+
+            const token = jwt.sign(data, 'secret_ecom');
+            res.json({ success: true, token });
+        } else {
+            res.status(401).json({ success: false, errors: "Wrong Password" });
+        }
+    } else {
+        res.status(404).json({ success: false, errors: "Email not registered" });
+    }
+});
+
+
+
+//craeting endpoint for newcollection data
+app.get('/newcollections',async (req,res)=>{
+    let menus = await Menu.find({});
+    let newcollection = menus.slice(1).slice(-8);
+    console.log("New food items fetched");
+    res.send(newcollection);
+})
+
+//craeting endpoint for popular in women section
+app.get('/popularinbreakfast',async (req,res)=>{
+    let menus = await Menu.find({category:"breakfast"});
+    let popular_in_breakfast = menus.slice(0,3);
+    console.log("Popular in Breakfast fetched");
+    res.send(popular_in_breakfast);
+})
+
+//creating middleware to fetch user
+    const fetchUser = async(req,res,next)=>{
+        const token = req.header('auth-token');
+        if (!token) {
+            res.status(401).send({errors:"Please authenticate using valid token"})
+        }
+        else{
+            try{
+                const data = jwt.verify(token,'secret_ecom');
+                req.user = data.user;
+                next();
+            }catch(error){
+                res.status(401).send({errors:"please authenticate using a valid token"})
+            }
+        }
+    }
+
+//creating endpoint for adding menu in cartdata
+app.post('/addtocart',fetchUser,async (req,res)=>{
+    console.log("added",req.body.itemId);
+    let userData = await Users.findOne({_id:req.user.id});
+    userData.cartData[req.body.itemId] += 1;
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData});
+    res.send("Added")
+})
+
+//creating endpoint to remove product from cartdata
+app.post('/removefromcart',fetchUser,async (req,res)=>{
+    console.log("removed",req.body.itemId);
+    let userData = await Users.findOne({_id:req.user.id});
+    if(userData.cartData[req.body.itemId]>0)
+    userData.cartData[req.body.itemId] -= 1;
+    await Users.findOneAndUpdate({_id:req.user.id},{cartData:userData.cartData});
+    res.send("Removed")
+})
+//creating endpoint to get cartdata
+app.post('/getcart',fetchUser,async (req,res)=>{
+    console.log("GetCart");
+    let userData = await Users.findOne({_id:req.user.id});
+    res.json(userData.cartData);
+})
+
+const feedback = new mongoose.Schema({
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  });
+  
+  const Feedback = mongoose.model("Feedback", feedback);
+  
+  // API creation
+  app.post('/submit-feedback', async (req, res) => {
+    try {
+      const { name, email, rating, comment } = req.body;
+  
+      // Validate data (you may want to add more validation)
+      if (!name || !email || !rating || !comment) {
+        return res.status(400).json({ success: false, error: 'All fields are required' });
+      }
+  
+      // Create a new Feedback instance
+      const newFeedback = new Feedback({
+        name,
+        email,
+        rating,
+        comment,
+      });
+  
+      // Save feedback to the database
+      await newFeedback.save();
+  
+      res.json({ success: true, message: 'Feedback submitted successfully' });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+  });
+  // Add this code in your index.js file
+app.get('/allfeedback', async (req, res) => {
+    try {
+      const feedbackData = await Feedback.find().sort({ createdAt: -1 });
+      res.json(feedbackData);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, error: 'Internal Server Error' });
+    }
+  });
+  
+
+app.listen(port,(error)=>{
+if(!error){
+    console.log("Server running on port "+port)
+}
+else{
+    console.log("Error: "+error)
+}
+})
