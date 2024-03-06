@@ -63,13 +63,6 @@ function DataFetcher() {
             {data?.session?.customer_details?.address?.state}, <br />
             {data?.session?.customer_details?.address?.country}, <br />
             {data?.session?.customer_details?.address?.postal_code}, <br />
-
-
-
-
-
-
-
         </div>
     );
 }
@@ -78,6 +71,7 @@ function DataFetcher() {
 
 export default function PaymentSuccess() {
     const [modalVisible, setModalVisible] = useState(true);
+    
     const navigate = useNavigate();
 
     const closeModal = () => {

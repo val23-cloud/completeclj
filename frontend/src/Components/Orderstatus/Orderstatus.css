@@ -1,0 +1,124 @@
+.orderstatus {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .status-slide {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .status-dot {
+    width: 100px;
+    height: 80px;
+    background-color: #3498db;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 8px;
+  }
+  
+  .status-dot.active {
+    background-color: #e74c3c;
+  }
+  
+  .order-details {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #555;
+  }
+  
+  .status-animation {
+    height: 10px;
+    background-color: #e74c3c;
+    margin-top: 20px;
+    transition: width 1s ease-in-out;
+  }
+  
+  .status-animation.preparing {
+    width: 33.33%;
+  }
+  
+  .status-animation.outForDelivery {
+    width: 66.66%;
+  }
+  
+  .status-animation.delivered {
+    width: 100%;
+  }
+  
+  /* Modal Styles */
+  .ReactModal__Overlay {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .ReactModal__Overlay--after-open {
+    opacity: 1;
+  }
+  
+  .ReactModal__Content {
+    background-color: #3498db;
+    color: #000;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  button {
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 10px 30px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #c0392b;
+  }
+  /* Add this at the end of your existing CSS file */
+
+/* Add this at the end of your existing CSS file */
+
+.slider-container {
+    width: 100%;
+    position: relative;
+    height: 10px;
+    background-color: #ecf0f1;
+    margin-top: 20px;
+  }
+  
+  .slider-track {
+    height: 100%;
+    width: 100%;
+    background-color: #bdc3c7;
+  }
+  
+  .slider-thumb {
+    height: 100%;
+    width: 33.33%;
+    background-color: #3498db;
+    position: absolute;
+    top: 0;
+    transition: width 0.3s;
+  }
+  
+  .slider-thumb.outForDelivery {
+    width: 66.66%;
+  }
+  
+  .slider-thumb.delivered {
+    width: 100%;
+  }
+  
+  

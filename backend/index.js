@@ -110,9 +110,9 @@ app.get('/payment-data', async (req, res) => {
   });
   
   app.all('/payment-failure', (req, res) => {
-    console.log(req.body)
-    res.status(200).json(req.body)
-  })
+    console.log(req.body);
+    res.redirect('http://localhost:3000/payment-failure'); // Redirect to the payment failure page on the client side
+});
   
   app.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
@@ -485,6 +485,8 @@ app.post('/getcart',fetchUser,async (req,res)=>{
     let userData = await Users.findOne({_id:req.user.id});
     res.json(userData.cartData);
 })
+
+
 
 const feedback = new mongoose.Schema({
     name: {
