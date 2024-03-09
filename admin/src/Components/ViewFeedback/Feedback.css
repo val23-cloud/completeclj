@@ -1,70 +1,72 @@
-
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-    justify-content:center;
-    align-content:center;
-    magin-right:30px;
-  }
-  .feedbackview{
-margin-left:30px;
-  }
-  
-  h1 {
-    color: #333;
-  }
-  
-  ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  li {
-    background-color: #fff;
-    margin-bottom: 20px;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease-in-out;
-  }
-  
-  li:hover {
-    transform: scale(1.05);
-  }
-  
-  p {
-    margin: 0;
-    padding: 5px 0;
-  }
-  
-  .loading-message {
-    font-style: italic;
-    color: #555;
-  }
-  
-  /* Optional: Add animations for loading state */
-  @keyframes pulse {
-    0% {
+  font-family: 'Arial', sans-serif;
+color:white;
+  justify-content: center;
+  align-items: center;
+  margin-right: 30px;
+}
+
+.feedbackview {
+  margin-left: 30px;
+}
+
+h1 {
+  color: #3498db; /* Blue color for headings */
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Two columns layout */
+  gap: 20px;
+}
+
+li {
+  background-color: #536878; /* Dark blue-gray background */
+  padding: 20px;
+  border-radius: 10px; /* Increased border radius for a softer look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Enhanced box shadow for depth */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s;
+}
+
+li:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Enhanced box shadow on hover */
+}
+
+p {
+  margin: 0;
+  padding: 5px 0;
+  color: #fff; /* White text color */
+}
+
+.loading-message {
+  font-style: italic;
+  color: #ccc; /* Lighter gray for loading message */
+}
+
+/* Optional: Add animations for loading state */
+@keyframes pulse {
+  0% {
       opacity: 0.6;
-    }
-    50% {
+  }
+  50% {
       opacity: 1;
-    }
-    100% {
+  }
+  100% {
       opacity: 0.6;
-    }
   }
-  
-  .loading-feedback {
-    text-align: center;
-    padding: 20px;
-  }
-  
-  .loading-feedback::before {
-    content: 'Loading feedback data...';
-    font-weight: bold;
-    animation: pulse 1.5s infinite;
-  }
-  
+}
+
+.loading-feedback {
+  text-align: center;
+  padding: 20px;
+}
+
+.loading-feedback::before {
+  content: 'Loading feedback data...';
+  font-weight: bold;
+  color: #3498db; /* Blue color for loading message */
+  animation: pulse 1.5s infinite;
+}

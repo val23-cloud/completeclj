@@ -1,53 +1,66 @@
-.list-menu{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    width:100%;
-    height:740px;
-    padding:10px 50px;
-    margin:20px;
-    border-radius:6px;
-    background:grey;
+/* Apply a trending blue-gray color to the background property with animations */
+.list-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 740px;
+    padding: 10px 50px;
+    margin: 20px;
+    border-radius: 10px;
+    background: #536878;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background 0.3s, box-shadow 0.3s;
 }
-.listmenu-format-main{
-    display:grid;
-    grid-template-columns:1fr 3fr 1fr 1fr 1fr 1fr;
-    gap:50px;
-    width:100%;
-    padding:10px 0px;
-    color:black;
-    font-size:18px;
-    font-weight:600;
-}
-.listmenu-format{
-    align-items:center;
-    font-weight:500;
-}
-.listmenu-menu-icon{
-    height:80px;
 
+.listmenu-format-main {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr 1fr 1fr 1fr;
+    gap: 50px;
+    width: 100%;
+    padding: 10px 0;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
 }
-.listmenu-remove-icon{
-    cursor:pointer;
-    margin:auto;
+
+.listmenu-format {
+    align-items: center;
+    font-weight: 500;
+    transition: transform 0.3s; /* Added transform animation on hover */
 }
-.listmenu-allmenus{
-    overflow-y:auto;
+
+.listmenu-format:hover {
+    transform: scale(1.05); /* Scale up on hover for an animated effect */
 }
-@media(max-width:800px){
-    .list-menu{
-        box-sizing:border-box;
-        width:95%;
-        height:100%;
-        padding:10px 30px;
-        margin: 20px auto;
-    }
-    .listmenu-format-main{
-        padding:15px 0px;
-        color:#454545;
-        font-size:12px;
-    }
-    .listmenu-menu-icon{
-        height:60px;
-    }
+
+.listmenu-menu-icon {
+    height: 80px;
+    transition: transform 0.3s, filter 0.3s; /* Added filter animation on hover */
+}
+
+.listmenu-menu-icon:hover {
+    transform: scale(1.1);
+    filter: brightness(1.2); /* Increase brightness on hover */
+}
+
+.listmenu-remove-icon {
+    cursor: pointer;
+    margin: auto;
+    color: #e74c3c;
+    transition: color 0.3s, transform 0.3s; /* Added transform animation on hover */
+}
+
+.listmenu-remove-icon:hover {
+    color: #c0392b;
+    transform: scale(1.1);
+}
+
+.listmenu-allmenus {
+    overflow-y: auto;
+    transition: background 0.3s; /* Added background color transition on hover */
+}
+
+.listmenu-allmenus:hover {
+    background: #435a6b; /* Darker blue-gray on hover */
 }

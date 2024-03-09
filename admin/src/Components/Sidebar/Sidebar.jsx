@@ -1,8 +1,10 @@
 import React from 'react'
 import './Sidebar.css'
 import {Link} from 'react-router-dom'
-import add_menu_icon from '../../assets/Product_Cart.svg'
-import list_menu from '../../assets/Product_list_icon.svg'
+import add_menu_icon from '../../assets/card.svg'
+import list_menu from '../../assets/check.svg'
+import view_fb from '../../assets/plane.svg'
+import orders from '../../assets/budget.svg'
 
 const Sidebar = () => {
   return (
@@ -21,8 +23,14 @@ const Sidebar = () => {
         </Link>
         <Link to={'/viewfeedback'} style={{textDecoration:"none"}}>
             <div className="sidebar-item">
-                <img src={list_menu} alt="" />
+                <img src={view_fb} alt="" />
                 <p style={{ textDecoration: 'none', color: 'white' }}>View Feedback</p>
+            </div>
+        </Link>
+        <Link to={'/manageorder'} style={{textDecoration:"none"}}>
+            <div className="sidebar-item">
+                <img src={orders} alt="" />
+                <p style={{ textDecoration: 'none', color: 'white' }}>Manage orders</p>
             </div>
         </Link>
     </div>

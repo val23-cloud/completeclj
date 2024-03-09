@@ -13,6 +13,7 @@ const AddMenu = () => {
     old_price:""
   })
 
+  
   const imageHandler = (e) =>{
     setImage(e.target.files[0]);
   }
